@@ -1,0 +1,562 @@
+/**
+ *
+ * WAVLTree
+ *
+ * An implementation of a WAVL Tree with distinct integer keys and info
+ *
+ */
+
+public class WAVLTree {
+
+	private WAVLNode root;
+	private int size;
+	private WAVLNode min;
+	private WAVLNode max;
+	private int pos;
+
+	public WAVLTree() {} // Constructor of an empty tree with null WABLNode as a root
+
+	public WAVLNode getRoot() {
+		return root;
+	}
+
+	public String toString() {
+		return "Tree with root " + root.toString();
+	}
+
+	/**
+	 * public boolean empty()
+	 *
+	 * returns true if and only if the tree is empty
+	 *
+	 */
+	public boolean empty() {
+		return root == null ? true : false;
+	}
+
+	/**
+	 * public String min()
+	 *
+	 * Returns the info of the item with the smallest key in the tree, or null if
+	 * the tree is empty
+	 */	
+	public String min() {
+		return empty() ? null : min.getInfo();
+	}
+
+	/**
+	 * public String max()
+	 *
+	 * Returns the info of the item with the largest key in the tree, or null if
+	 * the tree is empty
+	 */
+	public String max() {
+		return empty() ? null : max.getInfo();
+	}
+
+	/**
+	 * public int size()
+	 *
+	 * Returns the number of nodes in the tree.
+	 *
+	 * precondition: none postcondition: none
+	 */
+	public int size() {
+		return size;
+	}
+
+	/**
+	 * public String search(int k)
+	 *
+	 * returns the info of an item with key k if it exists in the tree
+	 * otherwise, returns null
+	 */
+	public String search(int k) {
+		WAVLNode x = root;
+		while (x.rank != -1) {
+			if (x.key == k) {
+				return x.info;
+			} else if (x.key > k) {
+				x = x.left;
+			} else {
+				x = x.right;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * public String search(int k)
+	 *
+	 * returns the info of an item with key k if it exists in the tree
+	 * otherwise, returns null
+	 */
+	public WAVLNode treePosition(int k) {
+		WAVLNode x = root;
+		WAVLNode y = new WAVLNode();
+		while (x.rank != -1) {
+			y = x;
+			if (x.key == k) {
+				return x;
+			} else if (x.key > k) {
+				x = x.left;
+			} else {
+				x = x.right;
+			}
+		}
+		return y;
+	}
+
+	public WAVLNode successor(WAVLNode x) {
+		return max == x ? null : x.successor();
+	}
+
+	public WAVLNode predecessor(WAVLNode x) {
+		return min == x ? null : x.predecessor();
+	}
+	
+	/**
+	 * public int insert(int k, String i)
+	 *
+	 * inserts an item with key k and info i to the WAVL tree. the tree must
+	 * remain valid (keep its invariants). returns the number of rebalancing
+	 * operations, or 0 if no rebalancing operations were necessary. returns -1
+	 * if an item with key k already exists in the tree.
+	 */
+	public int insert(int k, String i) {
+		if (this.empty()) {
+			return startTree(new WAVLNode(k,i)); 
+			}
+		WAVLNode y = this.treePosition(k);
+		if (y.key == k) {
+			System.out.println("key is already in Tree!");
+			return -1;
+		}
+		WAVLNode z = new WAVLNode(k, i);
+		z.insertAsSon(y);
+		insMaintainTreeFields(z);
+		
+		return balance(y); // to be replaced by student code
+	}
+	
+ 	private int balance(WAVLNode x) {
+ 		boolean notBalanced = true;
+ 		WAVLNode currNode = x;
+ 		int numOfSteps = 0;
+ 		while (notBalanced) {
+ 			if (currNode.isCase01()) {
+ 				numOfSteps += currNode.parent.promote();
+ 				currNode = currNode.parent;
+ 			}else if(currNode.isCase02()){
+ 				if (currNode.isCase0212()){
+ 					
+ 				}else if(currNode.isCase0221()){
+ 					
+ 				}
+ 			}
+ 			
+ 			else{
+ 				notBalanced=false;
+ 			}
+ 		}
+		return numOfSteps;
+	}
+
+	public int startTree(WAVLNode first){
+		min=max=root=first;
+		size++;
+		return 0;
+	}
+	
+	public void insMaintainTreeFields(WAVLNode newNode){
+		if (newNode.key<min.key){
+			min=newNode;
+		}
+		else if(newNode.key>max.key){
+			max=newNode;
+		}
+		size++;
+	}
+	
+	public int delete(int k) {
+		WAVLNode x = treePosition(k);
+		if (x.getKey() != k) {
+			return -1;
+			//k is in tree and x is indeed the node to be deleted
+		}
+		if (size == 1) {
+			resetTree();
+			return 0;
+		}
+		if (!x.isBinary()) {
+			if (x!=root){
+				x.deleteNonBin();
+			}
+			delMaintainTreeFields(x);
+		} else {
+			WAVLNode successor=x.successor();
+			x.replace(successor);
+			if (x==root){
+				root=successor;
+			}
+		}
+		size--;
+		return 42;
+	}
+	//to be noticed- deletion of root is responsibility of delMaintainTreeFields.NonBin does not delete root!
+	public void delMaintainTreeFields(WAVLNode x){
+		if (x == max) {
+			max = predecessor(x);
+		} else if (x == min) {
+			min = successor(x);
+		}if (x==root){
+			root=x.onlySon();
+		}
+		
+	}
+	
+	/**
+	 * public int delete(int k)
+	 *
+	 * deletes an item with key k from the binary tree, if it is there; the tree
+	 * must remain valid (keep its invariants). returns the number of
+	 * rebalancing operations, or 0 if no rebalancing operations were needed.
+	 * returns -1 if an item with key k was not found in the tree.
+	 */
+	public void resetTree(){
+		size=0;
+		max=min=root=null;}
+
+	/**
+	 * public int[] keysToArray()
+	 *
+	 * Returns a sorted array which contains all keys in the tree, or an empty
+	 * array if the tree is empty.
+	 */
+	public void keyAppend(WAVLNode x, int index, int[] array) {
+		if (array.length>0  && x.rank != -1 ) {
+			keyAppend(x.left, index, array);
+			array[pos++] = x.key;
+			keyAppend(x.right, index, array);
+		}
+	}
+
+	public void infoAppend(WAVLNode x, int index, String[] array) {
+		if (array.length>0  && x.rank != -1) {
+			infoAppend(x.left, index, array);
+			array[pos++] = x.getInfo();
+			infoAppend(x.right, index, array);
+		}
+	}
+
+	public int[] keysToArray() {
+		int[] arr = new int[size];
+		keyAppend(root, 0, arr);
+		pos = 0;
+		return arr; // to be replaced by student code
+	}
+
+	/**
+	 * public String[] infoToArray()
+	 *
+	 * Returns an array which contains all info in the tree, sorted by their
+	 * respective keys, or an empty array if the tree is empty.
+	 */
+	public String[] infoToArray() {
+		String[] arr = new String[size];
+		infoAppend(root, 0, arr);
+		pos = 0;
+		return arr;
+	}
+	
+	/**
+	 * public int rotate(WAVLNode x, String dir)
+	 * rotates a WAVLNode x to direction dir. 
+	 * The method assumes such node exists in the tree. 
+	 * It returns the number 1 for further balancing operations calculations.
+	 */
+	public int rotate(WAVLNode x, String dir) {
+		WAVLNode y = x.parent;
+		WAVLNode a = x.left;
+		WAVLNode b = x.right;
+		WAVLNode c;
+		if (x.isRightChild()) {
+			c = y.left;
+		} else {
+			c = y.right;
+		}
+		
+		if (y != root) {
+			if (y.isRightChild()) {
+				y.parent.right = x;
+			} else { 
+				y.parent.left = x;
+			}
+			x.parent = y.parent;
+		} else {
+			root = x;
+		}
+		
+		if (dir.equals("R")) {
+			y.left = b;
+			b.parent = y;
+			x.right = y;
+		} else {
+			y.right = a;
+			a.parent = y;
+			x.left = y;
+		}
+		y.parent = x;
+		
+		a.promote();
+		x.promote();
+		c.demote();
+		y.demote();
+		
+		return 1;
+	}
+	
+	/**
+	* public int doubleRotate(WAVLNode x, String dir)
+	* Rotate the WAVLNode x twice to the same direction dir
+	* Assumes x indeed exists
+	*/
+	public int doubleRotate(WAVLNode x, String dir) {
+		return rotate(x, dir) + rotate(x, dir);
+	}
+	
+	/**
+	 * public class WAVLNode
+	 *
+	 * If you wish to implement classes other than WAVLTree (for example
+	 * WAVLNode), do it in this file, not in another file. This is an example
+	 * which can be deleted if no such classes are necessary.
+	 */
+	public class WAVLNode {
+
+		private int key;
+		private String info;
+		private int rank;
+		private WAVLNode parent = null;
+		private WAVLNode left = null;
+		private WAVLNode right = null;
+
+		public WAVLNode() { rank = -1; } // Constructor of an external leaf
+		
+		public void deleteNonBin(){
+			WAVLNode son = onlySon();
+			son.parent = parent;
+			if (parent.right == this) {
+				parent.right = son;
+			} else {
+				parent.left = son;
+			}
+			}
+		
+		public WAVLNode(int newKey, String newValue) {
+			key = newKey;
+			info = newValue;
+			left = new WAVLNode();
+			left.setParent(this);
+			right = new WAVLNode();
+			right.setParent(this);
+		}
+		
+		public void insertAsSon(WAVLNode newParent){
+			parent=newParent;
+			String dir;
+			if (key < newParent.key) {
+				newParent.left=this;
+				dir="left";
+			} else {
+				newParent.right=this;
+				dir="right";
+			}
+			System.out.println(this.key+" inserted successfully as "+dir+" son of "+newParent.key);
+		}
+		
+		public WAVLNode min() {
+			if (rank == -1) {
+				return parent;
+			} else {
+				return left.min();
+			}
+		}
+
+		public WAVLNode max() {
+			if (rank == -1) {
+				return parent;
+			} else {
+				return right.max();
+			}
+		}
+
+		public WAVLNode successor() {
+			WAVLNode x = this;
+			if (right.rank != -1) {
+				return right.min();
+			}
+			WAVLNode y = parent;
+			while (y.right == this && y != null) {
+				x = y;
+				y = x.parent;
+				System.out.println("y is " + y + " " + y.parent);
+			}
+			return y;
+		}
+
+		public WAVLNode predecessor() {
+			WAVLNode x = this;
+			if (left.rank != -1) {
+				return left.max();
+			}
+			WAVLNode y = parent;
+			while (y.left == this && y != null) {
+				x = y;
+				y = x.parent;
+			}
+			return y;
+		}
+
+		public int promote() {
+			rank++;
+			return 1;
+		}
+
+		public int doublePromote() {
+			rank += 2;
+			return 2;
+		}
+
+		public int demote() {
+			rank--;
+			return 1;
+		}
+
+		public int doubleDemote() {
+			rank -= 2;
+			return 2;
+		}
+
+		public boolean isBinary() {
+			return right.rank != -1 && left.rank != -1;
+		}
+
+		public WAVLNode onlySon() {
+			if (left.rank != -1) {
+				return left;
+			} else {
+				return right;
+			}
+		}
+
+		public void replace(WAVLNode other) {
+			// Is successor left or right child
+			if (other == other.parent.left) {
+				other.parent.left = other.right; // there is no left child
+			} else {
+				other.parent.right = other.right;
+			}
+			// Replacement
+			System.out.println("replacing "+other.key+" with "+key);
+			other.parent = this.parent;
+			other.left = this.left;
+			other.right = this.right;
+
+			// Editing original parent and children
+			if (this.parent.left == this) {
+				this.parent.left = other;
+			} else {
+				this.parent.right = other;
+			}
+			this.left.parent = other;
+			this.right.parent = other;
+		}
+		
+		public boolean isUnary() {
+			return (!isBinary() && !isLeaf());
+		}
+		
+		public boolean isLeaf() {
+			return right.rank == -1 && left.rank == -1;
+		}
+		
+		public int getRank() {
+			return rank;
+		}
+
+		public void setRank(int rank) {
+			this.rank = rank;
+		}
+
+		public int getKey() {
+			return key;
+		}
+
+		public String getInfo() {
+			return info;
+		}
+
+		public WAVLNode getParent() {
+			return parent;
+		}
+
+		public void setParent(WAVLNode parent) {
+			this.parent = parent;
+		}
+
+		public WAVLNode getLeft() {
+			return left;
+		}
+
+		public void setLeft(WAVLNode left) {
+			this.left = left;
+		}
+
+		public WAVLNode getRight() {
+			return right;
+		}
+
+		public void setRight(WAVLNode right) {
+			this.right = right;
+		}
+		
+		public String toString() {
+			String result = "TreeNode " + key;
+			return result;
+		}
+	
+		public boolean isRightChild() {
+			return parent.right == this;
+		}
+	
+		public String postorder() {
+			String result = "";
+			if (rank == -1) {
+				return ""; 
+			} else {
+				result += left.postorder();
+				result += right.postorder();
+				result += toString();
+			}
+			return result;
+		}
+		
+		public boolean isCase01() { 
+			return (parent.rank-rank) + (parent.rank - parent.right.rank) == 1;			
+		}
+		
+		public boolean isCase02() { 
+			return (parent.rank-rank) + (parent.rank - parent.right.rank) == 2;
+		}
+		
+		
+		public boolean isCase0212() { 
+			return left.rank==1 && right.rank == 2;		
+		}
+		public boolean isCase0221() { 
+			return left.rank==2 && right.rank == 1;		
+		}
+
+}
+}
